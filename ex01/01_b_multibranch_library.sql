@@ -87,7 +87,8 @@ VALUES ('B1', 'Susannah', 3),
 
 -- Q1 --
 SELECT DISTINCT h.Title AS Title
-FROM Holdings h NATURAL JOIN Titles AS t
+FROM Holdings h INNER JOIN Titles AS t
+USING(Title)
 WHERE t.Publisher = 'Macmillan';
 /*
 +----------+
@@ -99,42 +100,36 @@ WHERE t.Publisher = 'Macmillan';
 */
 
 -- Q2 --
-SELECT BCode, Librarian, Address
-FROM Branches 
-WHERE BCode IN (
-  SELECT Branch
-  FROM Holdings h 
-  WHERE Title IN (
-    SELECT Title
-    FROM Titles
-    WHERE Author = 'Ann Brown'
-  )
+SELECT DISTINCT Branch
+FROM Holdings h 
+WHERE Title IN (
+  SELECT Title
+  FROM Titles
+  WHERE Author = 'Ann Brown'
 );
 /*
-+-------+---------------+---------------+
-| BCode | Librarian     | Address       |
-+-------+---------------+---------------+
-| B1    | John Smith    | 2 Anglesea Rd |
-| B2    | Mary Jones    | 34 Pearse St  |
-| B3    | Francis Owens | Grange X      |
-+-------+---------------+---------------+
++--------+
+| Branch |
++--------+
+| B1     |
+| B3     |
+| B2     |
++--------+
 */
 
 -- Q3 --
-SELECT DISTINCT BCode, Librarian, Address
-FROM Branches b INNER JOIN Holdings h 
-ON b.BCode = h.Branch
-INNER JOIN Titles
+SELECT DISTINCT Branch
+FROM Holdings h INNER JOIN Titles
 USING(Title)
 WHERE Author = 'Ann Brown'; 
 /*
-+-------+---------------+---------------+
-| BCode | Librarian     | Address       |
-+-------+---------------+---------------+
-| B1    | John Smith    | 2 Anglesea Rd |
-| B3    | Francis Owens | Grange X      |
-| B2    | Mary Jones    | 34 Pearse St  |
-+-------+---------------+---------------+
++--------+
+| Branch |
++--------+
+| B1     |
+| B3     |
+| B2     |
++--------+
 */
 
 

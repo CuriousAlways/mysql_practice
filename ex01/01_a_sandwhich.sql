@@ -89,56 +89,56 @@ VALUES ('Lincoln', 'Rye', 'Ham', 1.25),
 
 --- QUERIES --- 
 
--- Q1 --
-SELECT LName, Phone, Address
-FROM LOCATIONS
-WHERE LName IN (
-  SELECT Location 
-  FROM SANDWICHES AS s
-  WHERE EXISTS (
-    SELECT ''
-    FROM TASTES AS t
-    WHERE Name = 'Jones' AND s.Filling = t.Filling
-  )
+SELECT Location 
+FROM SANDWICHES AS s
+WHERE EXISTS (
+  SELECT ''
+  FROM TASTES AS t
+  WHERE Name = 'Jones' AND s.Filling = t.Filling
 );
 /*
-+-----------+---------+------------+
-| LName     | Phone   | Address    |
-+-----------+---------+------------+
-| Buttery   | 7023421 | College St |
-| O'Neill's | 6742134 | Pearse St  |
-+-----------+---------+------------+
++-----------+
+| Location  |
++-----------+
+| Buttery   |
+| O'Neill's |
++-----------+
 */
 
 -- Q2 --
-SELECT DISTINCT LName, Phone, Address
-FROM LOCATIONS AS l INNER JOIN SANDWICHES AS s
-ON l.LName = s.Location
-NATURAL JOIN TASTES
+SELECT Location
+FROM SANDWICHES INNER JOIN TASTES
+USING(Filling)
 WHERE Name = 'Jones';
 /*
-+-----------+---------+------------+
-| LName     | Phone   | Address    |
-+-----------+---------+------------+
-| Buttery   | 7023421 | College St |
-| O'Neill's | 6742134 | Pearse St  |
-+-----------+---------+------------+
++-----------+
+| Location  |
++-----------+
+| Buttery   |
+| O'Neill's |
++-----------+
+
 */
 
 -- Q3 --
-SELECT s.Location AS Location, COUNT(*) 
-FROM TASTES NATURAL JOIN (
-  SELECT DISTINCT Location, Filling
-  FROM SANDWICHES
-) s
-GROUP BY s.Location;
+SELECT temp.Location Location, COUNT(*) 'number of people'
+FROM (
+  SELECT DISTINCT s.Location AS Location, t.Name
+  FROM TASTES AS t INNER JOIN (
+    SELECT DISTINCT Location, Filling
+    FROM SANDWICHES
+  ) AS s 
+  USING(Filling)
+) temp
+GROUP BY temp.Location;
 /*
-+-----------+----------+
-| Location  | COUNT(*) |
-+-----------+----------+
-| Lincoln   |        3 |
-| old Nag   |        3 |
-| Buttery   |        3 |
-| O'Neill's |        5 |
-+-----------+----------+
++-----------+------------------+
+| Location  | number of people |
++-----------+------------------+
+| Lincoln   |                2 |
+| old Nag   |                2 |
+| Buttery   |                3 |
+| O'Neill's |                3 |
++-----------+------------------+
 */
+
