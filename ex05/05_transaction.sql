@@ -75,6 +75,7 @@ UPDATE accounts AS a INNER JOIN users AS u
 USING(account_no)
 SET a.balance = a.balance + 200
 WHERE u.name = 'userB';
+
 -- execute rollback to savepoint t if any of the above two UPDATE throws error
 ROLLBACK TO SAVEPOINT t;
 
