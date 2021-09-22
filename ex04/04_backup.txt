@@ -1,0 +1,18 @@
+$ sudo mysqldump --flush-logs vinsol_exercises > ./backup.sql
+
+mysql> CREATE DATABASE Restore;
+
+$ sudo mysql Restore < ./backup.sql
+
+$ sudo mysqlbinlog /var/lib/mysql/binlog.000683 > ./binlog.txt
+
+$ sudo  mysql < ./binlog.txt
+
+
+
+
+
+
+NOTE : 
+        $ -> denotes shell command
+        mysql>  -> denotes mysql prompt command
