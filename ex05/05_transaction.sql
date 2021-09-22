@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS accounts(
 );
 
 CREATE TABLE IF NOT EXISTS users(
-  id INT PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(20) NOT NULL,
   email VARCHAR(30) NOT NULL,
-  account_no INT NOT NULL,
+  account_no INT UNIQUE NOT NULL,
   CONSTRAINT fk_account FOREIGN KEY(account_no) REFERENCES accounts(account_no)
 );
 
@@ -21,10 +21,10 @@ VALUES (9900, 1, 100),
 (9911, 2, 0),
 (9922, 3, 600);
 
-INSERT INTO users
-VALUES (1, 'userA', 'userA@email.com', 9900),
-(2, 'userB', 'userB@email.com', 9911),
-(3, 'userC', 'userC@email.com', 9922);
+INSERT INTO users (name, email, account_no)
+VALUES ('userA', 'userA@email.com', 9900),
+('userB', 'userB@email.com', 9911),
+('userC', 'userC@email.com', 9922);
 
 --- Before Transaction
 SELECT * FROM accounts;
@@ -58,26 +58,35 @@ USING(account_no)
 SET a.balance = a.balance + 1000
 WHERE u.name = 'userA';
 
+COMMIT;
+
+
+
+START TRANSACTION;
+
 UPDATE accounts AS a INNER JOIN users AS u 
 USING(account_no)
 SET a.balance = a.balance - 500
 WHERE u.name = 'userA';
 
-SAVEPOINT t;
+COMMIT;
+
+
+
+START TRANSACTION;
 
 UPDATE accounts AS a INNER JOIN users AS u 
 USING(account_no)
 SET a.balance = a.balance - 200
 WHERE u.name = 'userA';
 
-
 UPDATE accounts AS a INNER JOIN users AS u 
 USING(account_no)
 SET a.balance = a.balance + 200
 WHERE u.name = 'userB';
 
--- execute rollback to savepoint t if any of the above two UPDATE throws error
-ROLLBACK TO SAVEPOINT t;
+-- execute rollback if any of the above two UPDATE throws error
+ROLLBACK;
 
 COMMIT;
 
