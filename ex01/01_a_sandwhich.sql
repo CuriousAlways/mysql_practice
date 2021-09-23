@@ -91,12 +91,12 @@ VALUES ('Lincoln', 'Rye', 'Ham', 1.25),
 
 -- Q1 --
 SELECT Location 
-FROM SANDWICHES AS s INNER JOIN (
+FROM SANDWICHES
+WHERE Filling IN (
   SELECT Filling
   FROM TASTES
   WHERE Name = 'Jones'
-) AS t 
-ON s.Filling = t.Filling;
+);
 /*
 +-----------+
 | Location  |
