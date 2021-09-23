@@ -38,8 +38,10 @@ To optimize the SELECT query we can use OPTIMIZE statement. This would defragmen
       'OPTIMIZE TABLE comments'
 
 ---- Q3.1 ----
-In the query WHERE filters based on 'commentable_id', 'commentable_type' and 'user_id' values. 'commentable_type' column has
-very few possible values (Article and photo) so its not a goog candidate for index. Also it is very unlikely that only few user would make lots of comment and also it would certainly refer to some 'User' table to the one who made the comment so it seem to be really good candidate for foreign key index. Also 'commentable_id' column would have less repeadted values so this could also be made an index.
+In the query WHERE, filters rows based on 'commentable_id', 'commentable_type' and 'user_id' values. 'commentable_type' column has
+very few possible values (Article and photo) so its not a good candidate for index. Also it is very unlikely that only few user would
+make lots of comment and also 'user_id' would certainly refer to some 'User' table to identify the one who made the comment so it seem
+to be really good candidate for foreign key index. Also 'commentable_id' column would have less repeated values so this could also be made an index.
 
 
 ---- Q4.1 ----
