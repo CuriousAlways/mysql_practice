@@ -47,63 +47,57 @@ VALUES (1, 5000),
 
 
 --- Q1
-SELECT NAME 
-FROM Employees AS e INNER JOIN (
-  SELECT EMPLOYEE_ID, SUM(COMMISSION_AMOUNT) AS TOTAL
-  FROM Commissions
-  GROUP BY EMPLOYEE_ID
-  ORDER BY TOTAL DESC
-  LIMIT 1
-) AS c
-ON c.EMPLOYEE_ID = e.ID;
+SELECT NAME, SUM(COMMISSION_AMOUNT) AS TOTAL
+FROM Employees AS e INNER JOIN Commissions AS c
+ON c.EMPLOYEE_ID = e.ID
+GROUP BY NAME
+ORDER BY TOTAL DESC
+LIMIT 1;
 /*
-+-------------+
-| NAME        |
-+-------------+
-| Chris Gayle |
-+-------------+
++-------------+-------+
+| NAME        | TOTAL |
++-------------+-------+
+| Chris Gayle |  9000 |
++-------------+-------+
 */
 
 --- Q2
-SELECT NAME 
-FROM Employees AS e INNER JOIN (
-  SELECT EMPLOYEE_ID, SUM(COMMISSION_AMOUNT) AS TOTAL
-  FROM Commissions
-  GROUP BY EMPLOYEE_ID
-  ORDER BY TOTAL DESC
-  LIMIT 3,1
-) AS c
-ON c.EMPLOYEE_ID = e.ID;
+SELECT ID, NAME, SALARY 
+FROM Employees
+GROUP BY ID, NAME
+ORDER BY SALARY DESC
+LIMIT 3,1;
 /*
-+--------------+
-| NAME         |
-+--------------+
-| Rahul Dravid |
-+--------------+
++----+--------------+--------+
+| ID | NAME         | SALARY |
++----+--------------+--------+
+|  3 | Rahul Dravid | 700000 |
++----+--------------+--------+
 */
 
 
 --- Q3
-SELECT d.NAME AS NAME, t.TOTAL 
-FROM Departments AS d INNER JOIN (
-  SELECT DEPARTMENT_ID, SUM(COMMISSION_AMOUNT) AS TOTAL
-  FROM Commissions AS c INNER JOIN Employees e 
-  ON e.ID = c.EMPLOYEE_ID
-  GROUP BY DEPARTMENT_ID
-  ORDER BY TOTAL DESC
-  LIMIT 1
-) AS t 
-ON d.ID = t.DEPARTMENT_ID;
+SELECT d.ID AS ID, 
+       d.NAME AS NAME, 
+       SUM(COMMISSION_AMOUNT) AS TOTAL 
+FROM Departments AS d INNER JOIN Employees e 
+ON d.ID = e.DEPARTMENT_ID
+INNER JOIN Commissions AS c 
+ON e.ID = c.EMPLOYEE_ID 
+GROUP BY ID, NAME
+ORDER BY TOTAL DESC
+LIMIT 1;
 /*
-+---------+-------+
-| NAME    | TOTAL |
-+---------+-------+
-| Banking | 13000 |
-+---------+-------+
++----+---------+-------+
+| ID | NAME    | TOTAL |
++----+---------+-------+
+|  1 | Banking | 13000 |
++----+---------+-------+
 */
 
 --- Q4
-SELECT GROUP_CONCAT(NAME separator ', ') AS EMPLOYEES, c.COMMISSION_AMOUNT AS COMMISSION 
+SELECT GROUP_CONCAT(DISTINCT NAME separator ', ') AS EMPLOYEES,
+       c.COMMISSION_AMOUNT AS COMMISSION 
 FROM Employees AS e INNER JOIN Commissions AS c
 ON e.ID = c.EMPLOYEE_ID
 WHERE c.COMMISSION_AMOUNT > 3000
@@ -112,8 +106,7 @@ GROUP BY COMMISSION;
 +---------------------------+------------+
 | EMPLOYEES                 | COMMISSION |
 +---------------------------+------------+
-| Rahul Dravid, Chris Gayle |       4000 |
+| Chris Gayle, Rahul Dravid |       4000 |
 | Chris Gayle, Wasim Akram  |       5000 |
 +---------------------------+------------+
-
 */
