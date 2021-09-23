@@ -86,10 +86,9 @@ VALUES ('B1', 'Susannah', 3),
 --- QUERIES --- 
 
 -- Q1 --
-SELECT DISTINCT h.Title AS Title
-FROM Holdings h INNER JOIN Titles AS t
-USING(Title)
-WHERE t.Publisher = 'Macmillan';
+SELECT Title
+FROM Titles
+WHERE Publisher = 'Macmillan';
 /*
 +----------+
 | Title    |
@@ -119,8 +118,8 @@ WHERE Title IN (
 
 -- Q3 --
 SELECT DISTINCT Branch
-FROM Holdings h INNER JOIN Titles
-USING(Title)
+FROM Holdings AS h INNER JOIN Titles AS t
+ON h.Title = t.Title
 WHERE Author = 'Ann Brown'; 
 /*
 +--------+
