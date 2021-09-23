@@ -1,0 +1,111 @@
+---- Q1 ----
+id            : unique identifier for each select clause
+select_type   : type of select query. possible values 
+                - SIMPLE    : no subquery or union 
+                - PRIMARY   : outermost part of complex query
+                - SUBQUERY  : contains subquery
+                - DERIVED   : contains subquery in FROM clause
+                - UNION     : contains union (for second and subsequent select in union)
+table         : table names, aliases and <derivedN> (if subquery in From clause, N denotes row id)
+partition     : NULL if table is not partitioned
+type          : it describes how a row would be searched. possible valus : 
+                - ALL    : whole table would be searched
+                - ref    : index would be used to access row but we could have multiple rows with same value
+                - eq_ref : rows will be accessed using an index, one row is read from the table. 
+                           This basically means that we are talking about UNIQUE or PRIMARY keys.
+                - const  : table has only one matching row which is also indexed.
+possible_keys : it list possible keys that could be used to search in each table. Possible value : 
+                - any index associated with table 
+                - NULL : denotes no index found 
+key           : It denotes the  keys that is actually used to search rows. 'NULL' denotes no keys would be used 
+key_len       : It denotes length of key.
+ref           : It shows the column or constant in table which is used to look up the values.
+rows          : It gives estimate of number of rows it need to read to get desired result.
+filtered      : It denotes percentage of rows that would be left after table condition. 
+Extra         : It contains additional inforamtion about MySQL would execute the query. Possible values 
+                - Using temporary : Temporary table would be created 
+                - Using where     : where clause would be used to filter result 
+                - Using index     : index would be used 
+                - Using filesort  : mysql would make extra pass to table to determine sorting order and then rows would be retrieved in sorted order.
+
+---- Q2.1 ----
+It means whole table would be searched to get the result of query.
+
+---- Q2.2 ----
+SELECT query is not optimal as we can see from the EXPLAIN output.
+'key' column of EXPLAIN output is NULL index is not used to get the result.
+To optimize the SELECT query we can use OPTIMIZE statement. This would defragment table and sort index.
+      'OPTIMIZE TABLE comments'
+
+---- Q3.1 ----
+In the query WHERE filters based on 'commentable_id', 'commentable_type' and 'user_id' values. 'commentable_type' column has
+very few possible values (Article and photo) so its not a goog candidate for index. Also it is very unlikely that only few user would make lots of comment and also it would certainly refer to some 'User' table to the one who made the comment so it seem to be really good candidate for foreign key index. Also 'commentable_id' column would have less repeadted values so this could also be made an index.
+
+
+---- Q4.1 ----
+QUERY : 
+  EXPLAIN SELECT PartName, ManfName
+  FROM Parts AS p INNER JOIN Manufacturers as m
+  ON p.ManfID = m.ManfID
+  WHERE m.ManfName = 'DEF Inc.'
+OUTPUT : 
++----+-------------+-------+------------+------+---------------+--------+---------+--------------------------+------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys | key    | key_len | ref                      | rows | filtered | Extra       |
++----+-------------+-------+------------+------+---------------+--------+---------+--------------------------+------+----------+-------------+
+|  1 | SIMPLE      | m     | NULL       | ALL  | PRIMARY       | NULL   | NULL    | NULL                     |    5 |    20.00 | Using where |
+|  1 | SIMPLE      | p     | NULL       | ref  | ManfID        | ManfID | 32      | vinsol_practice.m.ManfID |    3 |   100.00 | NULL        |
++----+-------------+-------+------------+------+---------------+--------+---------+--------------------------+------+----------+-------------+
+
+id            : 1 means only one select clause
+select_type   : SIMPLE denoting no subquery, derived table or union in out statement
+table         : table alias m,p used in statement 
+partition     : NULL as table is not partitioned
+type          : it describes how a row would be searched. for table m it is ALL meaning whole table would be scanned
+                for table p it is 'ref' which means index would be used to access row but we could have multiple rows with same value
+possible_keys : it list possible keys that could be used to search in each table.
+key           : It denotes the  keys that is actually used to search rows. 'NULL' denotes no keys would be used 
+key_len       : It denotes length of key, in the table p ManfID is char(8) type which translates to 32B
+ref           : It shows the column in in table which is used to look up the values for table 'p' 'ManfID' column is used 
+rows          : It gives estimate of number of rows it need to read to get desired result. 5 for 'm' and 3 for 'p'
+filtered      : It denotes percentage of rows that would be left after table condition. for both table 'm' only 20% of would remain and
+                for table 'p' nothing would be dropped.
+Extra         : It contains additional inforamtion about MySQL would execute the query.
+                for 'Manufacturers' table WHERE clause to is used restrict which rows are fetched.
+
+
+---- Q4.2 ----
+QUERY : 
+  EXPLAIN SELECT PartName
+  FROM Parts
+  WHERE ManfID = (
+    SELECT ManfID 
+    FROM Manufacturers
+    WHERE ManfName = 'DEF Inc.'
+  );
+OUTPUT :
++----+-------------+---------------+------------+------+---------------+--------+---------+-------+------+----------+-------------+
+| id | select_type | table         | partitions | type | possible_keys | key    | key_len | ref   | rows | filtered | Extra       |
++----+-------------+---------------+------------+------+---------------+--------+---------+-------+------+----------+-------------+
+|  1 | PRIMARY     | Parts         | NULL       | ref  | ManfID        | ManfID | 32      | const |    3 |   100.00 | Using where |
+|  2 | SUBQUERY    | Manufacturers | NULL       | ALL  | NULL          | NULL   | NULL    | NULL  |    5 |    20.00 | Using where |
++----+-------------+---------------+------------+------+---------------+--------+---------+-------+------+----------+-------------+
+
+id            : 1,2 identifying each select clause
+select_type   : PRIMARY denoting outer query 
+                SUBQUERY denotes SELECT clause contains a subquery.
+table         : table names 'Parts', 'Manufacturers' used in statement 
+partition     : NULL as table is not partitioned
+type          : it describes how a row would be searched. for table 'Manufacturers' it is ALL meaning whole table would be scanned
+                for table 'Parts' it is 'ref' which means index would be used to access row but we could have multiple rows with same value
+possible_keys : it list possible keys that could be used to search in each table.
+key           : It denotes the  keys that is actually used to search rows. 'NULL' denotes no keys would be used 
+key_len       : It denotes length of key, in the table 'Parts' 'ManfID' is char(8) type which translates to 32B
+ref           : It shows the column or constant in table which is used to look up the values. for table 'Parts' a constant column is used 
+rows          : It gives estimate of number of rows it need to read to get desired result. 5 for 'Manufacturers' and 3 for 'Parts'
+filtered      : It denotes percentage of rows that would be left after table condition. for both table 'Manufacturers' only 20% of would remain and
+                for table 'Parts' nothing would be dropped.
+Extra         : It contains additional inforamtion about MySQL would execute the query.
+                for both the table WHERE clause to is used restrict which rows are fetched.
+
+EXPLAIN gives similar statistics for both type of query but in subquery version it uses where to filter rows from both table so it may 
+perform better as it would have smaller subset early on during execution.
