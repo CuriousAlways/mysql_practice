@@ -77,22 +77,21 @@ LIMIT 3,1;
 
 
 --- Q3
-SELECT d.ID AS ID, 
-       d.NAME AS NAME, 
+SELECT d.NAME AS NAME, 
        SUM(COMMISSION_AMOUNT) AS TOTAL 
 FROM Departments AS d INNER JOIN Employees e 
 ON d.ID = e.DEPARTMENT_ID
 INNER JOIN Commissions AS c 
 ON e.ID = c.EMPLOYEE_ID 
-GROUP BY ID, NAME
+GROUP BY NAME
 ORDER BY TOTAL DESC
 LIMIT 1;
 /*
-+----+---------+-------+
-| ID | NAME    | TOTAL |
-+----+---------+-------+
-|  1 | Banking | 13000 |
-+----+---------+-------+
++---------+-------+
+| NAME    | TOTAL |
++---------+-------+
+| Banking | 13000 |
++---------+-------+
 */
 
 --- Q4
