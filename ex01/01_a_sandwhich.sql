@@ -89,13 +89,14 @@ VALUES ('Lincoln', 'Rye', 'Ham', 1.25),
 
 --- QUERIES --- 
 
+-- Q1 --
 SELECT Location 
-FROM SANDWICHES AS s
-WHERE EXISTS (
-  SELECT ''
-  FROM TASTES AS t
-  WHERE Name = 'Jones' AND s.Filling = t.Filling
-);
+FROM SANDWICHES AS s INNER JOIN (
+  SELECT Filling
+  FROM TASTES
+  WHERE Name = 'Jones'
+) AS t 
+ON s.Filling = t.Filling;
 /*
 +-----------+
 | Location  |
@@ -107,8 +108,8 @@ WHERE EXISTS (
 
 -- Q2 --
 SELECT Location
-FROM SANDWICHES INNER JOIN TASTES
-USING(Filling)
+FROM SANDWICHES AS s INNER JOIN TASTES AS t
+ON s.Filling = t.Filling
 WHERE Name = 'Jones';
 /*
 +-----------+
@@ -121,16 +122,11 @@ WHERE Name = 'Jones';
 */
 
 -- Q3 --
-SELECT temp.Location Location, COUNT(*) 'number of people'
-FROM (
-  SELECT DISTINCT s.Location AS Location, t.Name
-  FROM TASTES AS t INNER JOIN (
-    SELECT DISTINCT Location, Filling
-    FROM SANDWICHES
-  ) AS s 
-  USING(Filling)
-) temp
-GROUP BY temp.Location;
+SELECT Location, COUNT(DISTINCT(Name)) AS `number of people`
+FROM TASTES AS t INNER JOIN SANDWICHES AS s 
+ON t.Filling = s.Filling
+GROUP BY Location
+ORDER BY `number of people`;
 /*
 +-----------+------------------+
 | Location  | number of people |
